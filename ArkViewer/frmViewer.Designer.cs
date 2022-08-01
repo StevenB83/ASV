@@ -193,6 +193,7 @@ namespace ARKViewer
             this.lvwStructureLocations_Structure = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_Lat = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_Lon = new System.Windows.Forms.ColumnHeader();
+            this.lvwStructureLocations_CreatedTime = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_LastTime = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_DecayReset = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_CCC = new System.Windows.Forms.ColumnHeader();
@@ -2066,6 +2067,7 @@ namespace ARKViewer
             this.lvwStructureLocations_Structure,
             this.lvwStructureLocations_Lat,
             this.lvwStructureLocations_Lon,
+            this.lvwStructureLocations_CreatedTime,
             this.lvwStructureLocations_LastTime,
             this.lvwStructureLocations_DecayReset,
             this.lvwStructureLocations_CCC});
@@ -2102,6 +2104,11 @@ namespace ARKViewer
             // 
             this.lvwStructureLocations_Lon.Text = "Lon";
             this.lvwStructureLocations_Lon.Width = 71;
+            // 
+            // lvwStructureLocations_CreatedTime
+            // 
+            this.lvwStructureLocations_CreatedTime.Text = "Created Time";
+            this.lvwStructureLocations_CreatedTime.Width = 120;
             // 
             // lvwStructureLocations_LastTime
             // 
@@ -4284,6 +4291,7 @@ namespace ARKViewer
         private System.Windows.Forms.CheckBox chkItemSearchBlueprints;
         private System.Windows.Forms.ComboBox cboTamedResource;
         private System.Windows.Forms.Label lblTameResource;
+        private System.Windows.Forms.ColumnHeader lvwStructureLocations_CreatedTime;
         private System.Windows.Forms.ColumnHeader lvwStructureLocations_LastTime;
         private System.Windows.Forms.ColumnHeader lvwStructureLocations_DecayReset;
         private System.Windows.Forms.ColumnHeader lvwWildDetail_Scale;
