@@ -1009,6 +1009,9 @@ namespace ARKViewer.Models
                                 jw.WritePropertyName("tribe");
                                 jw.WriteValue(tribe.TribeName);
 
+                                jw.WritePropertyName("owner");
+                                jw.WriteValue(structure.OwningPlayerName ?? tribe.TribeName);
+
 
                                 jw.WritePropertyName("struct");
                                 jw.WriteValue(structure.ClassName);
@@ -1022,11 +1025,11 @@ namespace ARKViewer.Models
                                 jw.WritePropertyName("ccc");
                                 jw.WriteValue($"{structure.X} {structure.Y} {structure.Z}");
 
-                                if (structure.CreatedDateTime.HasValue)
-                                {
-                                    jw.WritePropertyName("created");
-                                    jw.WriteValue(structure.CreatedDateTime.Value.ToUniversalTime());
-                                }
+                                jw.WritePropertyName("created");
+                                jw.WriteValue(structure.CreatedDateTime.Value.ToUniversalTime());
+                                
+                                jw.WritePropertyName("refreshed");
+                                jw.WriteValue(structure.LastAllyInRangeTime.Value.ToUniversalTime());
 
                                 if (Program.ProgramConfig.ExportInventories)
                                 {

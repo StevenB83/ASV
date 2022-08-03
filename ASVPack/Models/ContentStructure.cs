@@ -20,6 +20,7 @@ namespace ASVPack.Models
         [DataMember] public float Z { get; set; } = 0;
         [DataMember] public ContentInventory Inventory { get; set; } = new ContentInventory();
         [DataMember] public long TargetingTeam { get; set; } = 0;
+        [DataMember] public string OwningPlayerName { get; set; } = "";
 
         [DataMember] public double CreatedTimeInGame { get; set; } = 0;
         public DateTime? CreatedDateTime { get; internal set; }
@@ -41,6 +42,7 @@ namespace ASVPack.Models
             HasDecayTimeReset = structureObject.GetPropertyValue<bool>("bHasResetDecayTime", 0, false);
             LastAllyInRangeTimeInGame = structureObject.GetPropertyValue<double>("LastInAllyRangeTime", 0, 0);
             TargetingTeam = structureObject.GetPropertyValue<int>("TargetingTeam", 0, 0);
+            OwningPlayerName = structureObject.GetPropertyValue<string>("OwningPlayerName");
             CreatedTimeInGame = structureObject.GetPropertyValue<double>("OriginalCreationTime", 0, 0);
 
         }

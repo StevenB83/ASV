@@ -527,6 +527,9 @@ namespace ASVPack.Models
 
                                 jw.WritePropertyName("tribe");
                                 jw.WriteValue(tribe.TribeName);
+                                
+                                jw.WritePropertyName("owner");
+                                jw.WriteValue(structure.OwningPlayerName ?? tribe.TribeName);
 
 
                                 jw.WritePropertyName("struct");
@@ -543,7 +546,10 @@ namespace ASVPack.Models
 
 
                                 jw.WritePropertyName("created");
-                                jw.WriteValue($"{structure.CreatedDateTime}");
+                                jw.WriteValue(structure.CreatedDateTime.Value.ToUniversalTime());
+
+                                jw.WritePropertyName("refreshed");
+                                jw.WriteValue(structure.LastAllyInRangeTime.Value.ToUniversalTime());
 
                                 bool exportInventories = true;
 
