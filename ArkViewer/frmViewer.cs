@@ -5141,6 +5141,7 @@ namespace ARKViewer
                             }
 
                             ListViewItem newItem = new ListViewItem(tribeName);
+                            newItem.SubItems.Add(playerStructure.OwningPlayerName ?? tribeName);
                             newItem.SubItems.Add(itemName);
 
 

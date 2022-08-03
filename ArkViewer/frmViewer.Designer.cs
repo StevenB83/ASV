@@ -190,6 +190,7 @@ namespace ARKViewer
             this.cboStructurePlayer = new System.Windows.Forms.ComboBox();
             this.lvwStructureLocations = new System.Windows.Forms.ListView();
             this.lvwStructureLocations_Tribe = new System.Windows.Forms.ColumnHeader();
+            this.lvwStructureLocations_Owner = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_Structure = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_Lat = new System.Windows.Forms.ColumnHeader();
             this.lvwStructureLocations_Lon = new System.Windows.Forms.ColumnHeader();
@@ -2064,6 +2065,7 @@ namespace ARKViewer
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lvwStructureLocations.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.lvwStructureLocations_Tribe,
+            this.lvwStructureLocations_Owner,
             this.lvwStructureLocations_Structure,
             this.lvwStructureLocations_Lat,
             this.lvwStructureLocations_Lon,
@@ -2089,6 +2091,11 @@ namespace ARKViewer
             // 
             this.lvwStructureLocations_Tribe.Text = "Tribe";
             this.lvwStructureLocations_Tribe.Width = 200;
+            // 
+            // lvwStructureLocations_Owner
+            // 
+            this.lvwStructureLocations_Owner.Text = "Owner";
+            this.lvwStructureLocations_Owner.Width = 200;
             // 
             // lvwStructureLocations_Structure
             // 
@@ -4134,6 +4141,7 @@ namespace ARKViewer
         private System.Windows.Forms.ComboBox cboStructurePlayer;
         private System.Windows.Forms.ListView lvwStructureLocations;
         private System.Windows.Forms.ColumnHeader lvwStructureLocations_Tribe;
+        private System.Windows.Forms.ColumnHeader lvwStructureLocations_Owner;
         private System.Windows.Forms.ColumnHeader lvwStructureLocations_Structure;
         private System.Windows.Forms.ColumnHeader lvwStructureLocations_Lat;
         private System.Windows.Forms.ColumnHeader lvwStructureLocations_Lon;
