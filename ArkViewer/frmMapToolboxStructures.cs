@@ -1,10 +1,12 @@
 ﻿using ARKViewer.Models;
 using ARKViewer.Models.NameMap;
 using ASVPack.Models;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -109,6 +111,7 @@ namespace ARKViewer
             chkMapMagmaNests.Checked = c.MagmaNests;
             chkMapBeaverDams.Checked = c.BeaverDams;
             chkMapGlitches.Checked = c.Glitches;
+            chkMapBeeHives.Checked = c.BeeHives;
 
             isLoading = false;
 
@@ -407,6 +410,29 @@ namespace ARKViewer
 
                 });
             }
+
+            if (c.BeeHives)
+            {
+                var structures = cm.GetBeeHives();
+                Parallel.ForEach(structures, structure =>
+                {
+                    string friendlyName = structure.ClassName;
+                    var mapStructure = Program.ProgramConfig.StructureMap.FirstOrDefault<StructureClassMap>(m => m.ClassName == structure.ClassName);
+                    if (mapStructure != null)
+                    {
+                        friendlyName = mapStructure.FriendlyName;
+                    }
+
+                    ListViewItem newItem = new ListViewItem(friendlyName);
+                    newItem.SubItems.Add(structure.Latitude.GetValueOrDefault(0).ToString("f2"));
+                    newItem.SubItems.Add(structure.Longitude.GetValueOrDefault(0).ToString("f2"));
+                    newItem.Tag = structure;
+
+                    structureBag.Add(newItem);
+
+                });
+            }
+
             if (c.Glitches)
             {
                 var structures = cm.GetGlitchMarkers();
@@ -529,6 +555,7 @@ namespace ARKViewer
             c.MagmaNests = chkMapMagmaNests.Checked;
             c.BeaverDams = chkMapBeaverDams.Checked;
             c.Glitches = chkMapGlitches.Checked;
+            c.BeeHives = chkMapBeeHives.Checked;
 
             PopulateMapStructures();
 
@@ -658,6 +685,154 @@ namespace ARKViewer
 
             // Sort.
             lvwStructureLocations.Sort();
+        }
+
+        private void lvwStructureLocations_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+
+
+            }
+        }
+
+        private void mnuContextExport_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "JavaScript Object Notation|*.json";
+            saveDialog.Title = "Export Data";
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                string saveFilename = saveDialog.FileName;
+
+
+                switch (saveDialog.FilterIndex)
+                {
+                    case 1:
+                        if (lvwStructureLocations.Items.Count > 0)
+                        {
+                            JArray jsonItems = new JArray();
+                            foreach (ListViewItem item in lvwStructureLocations.Items)
+                            {
+                                //row > columns 
+                                JArray jsonFields = new JArray();
+                                foreach (ColumnHeader header in lvwStructureLocations.Columns)
+                                {
+
+                                    string headerText = header.Text;
+                                    headerText = headerText.Replace("< ", "");
+                                    headerText = headerText.Replace("> ", "");
+
+
+                                    JObject jsonField = new JObject();
+                                    if (double.TryParse(item.SubItems[header.Index].Text, out _))
+                                    {
+                                        if (item.SubItems[header.Index].Text.Contains("."))
+                                        {
+                                            decimal.TryParse(item.SubItems[header.Index].Text, out decimal decValue);
+
+                                            jsonField.Add(new JProperty(headerText, decValue));
+                                        }
+                                        else
+                                        {
+                                            int.TryParse(item.SubItems[header.Index].Text, out int intValue);
+
+                                            jsonField.Add(new JProperty(headerText, intValue));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        jsonField.Add(new JProperty(headerText, item.SubItems[header.Index].Text));
+                                    }
+
+
+                                    jsonFields.Add(jsonField);
+                                }
+                                jsonItems.Add(jsonFields);
+
+                            }
+                            File.WriteAllText(saveDialog.FileName, jsonItems.ToString());
+
+                            MessageBox.Show("Export complete.", "Exported", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("No data to export.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+
+                        //JSON
+                        break;
+
+                    case 2:
+                        //CSV
+                        if (lvwStructureLocations.Items.Count > 0)
+                        {
+                            StringBuilder csvBuilder = new StringBuilder();
+                            for (int colIndex = 0; colIndex < lvwStructureLocations.Columns.Count; colIndex++)
+                            {
+
+                                ColumnHeader header = lvwStructureLocations.Columns[colIndex];
+                                string headerText = header.Text;
+                                headerText = headerText.Replace("< ", "");
+                                headerText = headerText.Replace("> ", "");
+
+                                csvBuilder.Append("\"" + headerText + "\"");
+                                if (colIndex < lvwStructureLocations.Columns.Count - 1)
+                                {
+                                    csvBuilder.Append(",");
+                                }
+
+                            }
+                            csvBuilder.Append("\n");
+
+                            foreach (ListViewItem item in lvwStructureLocations.Items)
+                            {
+                                //rows
+                                for (int colIndex = 0; colIndex < lvwStructureLocations.Columns.Count; colIndex++)
+                                {
+
+                                    if (double.TryParse(item.SubItems[colIndex].Text, out _))
+                                    {
+                                        csvBuilder.Append(item.SubItems[colIndex].Text);
+                                    }
+                                    else
+                                    {
+                                        csvBuilder.Append("\"" + item.SubItems[colIndex].Text + "\"");
+                                    }
+
+                                    if (colIndex < lvwStructureLocations.Columns.Count - 1)
+                                    {
+                                        csvBuilder.Append(",");
+                                    }
+
+                                }
+
+                                csvBuilder.Append("\n");
+                            }
+                            File.WriteAllText(saveDialog.FileName, csvBuilder.ToString());
+
+                            MessageBox.Show("Export complete.", "Exported", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("No data to export.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        break;
+                }
+
+
+
+            }
+        }
+
+        private void layoutStructures_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void chkMapBeeHives_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateConfig();
         }
     }
 }

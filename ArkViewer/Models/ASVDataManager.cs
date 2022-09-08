@@ -70,6 +70,7 @@ namespace ARKViewer.Models
             }
         }
 
+        public string Realm { get; set; } = "";
         
 
 
@@ -81,6 +82,24 @@ namespace ARKViewer.Models
 
                 string imageFilePath = AppContext.BaseDirectory;
                 string imageFilename = Program.MapPack.SupportedMaps.FirstOrDefault(m => m.Filename.ToLower().Contains(MapFilename.ToLower()))?.ImageFile;
+                if(Realm!=null && Realm.Length > 0)
+                {
+                    var selectedRealm = LoadedMap.Regions.FirstOrDefault(r => r.RegionName == Realm);
+                    if (selectedRealm != null)
+                    {
+                        var realmImage = selectedRealm.ImageFile ?? "";
+                        if(realmImage.Length > 0)
+                        {
+                            var realmFilePath = Path.Combine(imageFilePath, "Maps\\", realmImage);
+                            if (File.Exists(realmFilePath))
+                            {
+                                imageFilename = realmImage;
+                            }
+                        }
+
+                    }
+                }
+
                 try
                 {
                     return Image.FromFile(Path.Combine(imageFilePath, "Maps\\", imageFilename));
@@ -140,6 +159,7 @@ namespace ARKViewer.Models
         {
             if (pack.WildCreatures == null) return new List<ContentWildCreature>();
 
+            Realm = selectedRealm;
 
             var wilds = pack.WildCreatures.Where(w =>
                                             ((w.ClassName == selectedClass || selectedClass == "") && ((w.BaseLevel >= minLevel && w.BaseLevel <= maxLevel) || w.BaseLevel == 0))
@@ -178,6 +198,8 @@ namespace ARKViewer.Models
         public List<ContentTamedCreature> GetTamedCreatures(string selectedClass, long selectedTribeId, long selectedPlayerId, bool includeCryoVivarium, string selectedRealm)
         {
             if (pack.Tribes == null) return new List<ContentTamedCreature>();
+
+            Realm = selectedRealm;
 
             var tamed = pack.Tribes
                 .Where(t => (t.TribeId == selectedTribeId || selectedTribeId == 0) || t.Players.Any(p => p.Id == selectedPlayerId && selectedPlayerId != 0))
@@ -246,6 +268,12 @@ namespace ARKViewer.Models
             return pack.BeaverDams;
         }
 
+        public List<ContentStructure> GetBeeHives()
+        {
+            if (pack == null || pack.BeeHives == null) return new List<ContentStructure>();
+            return pack.BeeHives;
+        }
+
         public List<ContentStructure> GetWyvernNests()
         {
             if (pack == null || pack.WyvernNests == null) return new List<ContentStructure>();
@@ -311,6 +339,8 @@ namespace ARKViewer.Models
         {
             if (pack.Tribes == null) return new List<ContentStructure>();
 
+            Realm = selectedRealm;
+
             var tribeStructures = pack.Tribes
                 .Where(t =>
                     (t.TribeId == selectedTribeId || (selectedTribeId == 0 && selectedPlayerId == 0))
@@ -362,6 +392,9 @@ namespace ARKViewer.Models
         public List<ContentPlayer> GetPlayers(long selectedTribeId, long selectedPlayerId, string selectedRealm)
         {
             if (pack.Tribes == null) return new List<ContentPlayer>();
+
+            Realm = selectedRealm;
+
             var tribePlayers = pack.Tribes
                 .Where(t =>
                     t.TribeId == selectedTribeId || selectedTribeId == 0
@@ -412,6 +445,9 @@ namespace ARKViewer.Models
         public List<ContentDroppedItem> GetDroppedItems(long playerId, string className, string selectedRealm)
         {
             if (pack.DroppedItems == null) return new List<ContentDroppedItem>();
+
+            Realm = selectedRealm;
+
             var foundItems = pack.DroppedItems
                 .Where(d =>
                     d.IsDeathCache == false
@@ -447,6 +483,7 @@ namespace ARKViewer.Models
         {
             List<ASVFoundItem> foundItems = new List<ASVFoundItem>();
 
+            Realm = selectedRealm;
 
             //get selected tribe(s)
             var tribes = GetTribes(tribeId);
@@ -981,6 +1018,12 @@ namespace ARKViewer.Models
             }
         }
 
+        public void ExportMapStructures(string exportFilename)
+        {
+            pack.ExportJsonMapStructures(exportFilename);
+
+        }
+
         public void ExportPlayerStructures(string exportFilename)
         {
             string exportFolder = Path.GetDirectoryName(exportFilename);
@@ -1393,7 +1436,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
 
                 var filteredResults = GetItems(tribeId, className, selectedRealm);
@@ -1461,7 +1504,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
                 var filteredWilds = GetWildCreatures(minLevel, maxLevel, filterLat, filterLon, filterRadius, className, selectedRealm);
                 
@@ -1548,7 +1591,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
 
                 var filteredTames = GetTamedCreatures(className, tribeId, playerId, includeStored, selectedRealm);
@@ -1630,7 +1673,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
                 var filteredDrops = GetDroppedItems(droppedPlayerId, droppedClass, selectedRealm);
                 float markerSize = 10f;
@@ -1708,7 +1751,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
 
                 var filteredDrops = GetDeathCacheBags(droppedPlayerId);
@@ -1788,7 +1831,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
                 var filteredStructures = GetPlayerStructures(tribeId, playerId, className, false, selectedRealm);
                 foreach (var playerStructure in filteredStructures)
@@ -1862,7 +1905,7 @@ namespace ARKViewer.Models
                 cacheImageTribes = new Tuple<long, bool, bool, bool>(tribeId, showStructures, showPlayers, showTames);
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
 
                 var tribe = GetTribes(tribeId).FirstOrDefault<ContentTribe>();
@@ -2056,7 +2099,7 @@ namespace ARKViewer.Models
                 cachedOptions = mapOptions;
 
                 graphics.DrawImage(MapImage, new Rectangle(0, 0, 1024, 1024));
-                graphics = AddMapStructures(graphics, mapOptions.Terminals, mapOptions.Glitches, mapOptions.ChargeNodes, mapOptions.BeaverDams, mapOptions.DeinoNests, mapOptions.WyvernNests, mapOptions.DrakeNests, mapOptions.MagmaNests, mapOptions.OilVeins, mapOptions.WaterVeins, mapOptions.GasVeins, mapOptions.Artifacts);
+                graphics = AddMapStructures(graphics, mapOptions);
 
                 var filteredPlayers = GetPlayers(tribeId, playerId, selectedRealm);
                 foreach (var player in filteredPlayers)
@@ -2132,7 +2175,25 @@ namespace ARKViewer.Models
 
 
             var config = Program.ProgramConfig;
-            graphics = AddMapStructures(graphics, config.Obelisks, config.Glitches, config.ChargeNodes, config.BeaverDams, config.DeinoNests, config.WyvernNests, config.DrakeNests, config.MagmaNests, config.OilVeins, config.WaterVeins, config.GasVeins, config.Artifacts);
+            ASVStructureOptions mapOptions = new ASVStructureOptions()
+            {
+                Artifacts = config.Artifacts,
+                BeaverDams = config.BeaverDams,
+                BeeHives = config.BeeHives,
+                ChargeNodes = config.ChargeNodes,
+                DeinoNests = config.DeinoNests,
+                DrakeNests = config.DrakeNests,
+                GasVeins = config.GasVeins,
+                Glitches = config.Glitches,
+                MagmaNests = config.MagmaNests,
+                OilVeins = config.OilVeins,
+                Terminals = config.Obelisks,
+                WaterVeins = config.WaterVeins,
+                WyvernNests = config.WyvernNests
+            };
+
+
+            graphics = AddMapStructures(graphics, mapOptions);
             if (customMarkers != null && customMarkers.Count > 0)
             {
                 graphics = AddCustomMarkers(graphics, customMarkers);
@@ -2142,7 +2203,7 @@ namespace ARKViewer.Models
             return bitmap;
         }
 
-        private Graphics AddMapStructures(Graphics g, bool includeTerminals, bool includeGlitches, bool includeChargeNodes, bool includeBeaverDams, bool includeDeinoNests, bool includeWyvernNests, bool includeDrakeNests, bool includeMagmaNests, bool includeOilVeins, bool includeWaterVeins, bool includeGasVeins, bool includeArtifacts)
+        private Graphics AddMapStructures(Graphics g, ASVStructureOptions structureOptions)
         {
             decimal markerX = 0;
             decimal markerY = 0;
@@ -2150,7 +2211,7 @@ namespace ARKViewer.Models
             Tuple<int, int, decimal, decimal, decimal, decimal> mapvals = Tuple.Create(1024, 1024, 0.0m, 0.0m, 100.0m, 100.0m);
 
             //obelisks/tribute terminals
-            if (includeTerminals)
+            if (structureOptions.Terminals)
             {
                 var terminalMarkers = pack.TerminalMarkers;
                 foreach (var terminal in terminalMarkers)
@@ -2177,7 +2238,7 @@ namespace ARKViewer.Models
 
             }
 
-            if (includeGlitches)
+            if (structureOptions.Glitches)
             {
                 foreach (var glitch in pack.GlitchMarkers)
                 {
@@ -2200,7 +2261,7 @@ namespace ARKViewer.Models
 
 
             //charge nodes?
-            if (includeChargeNodes)
+            if (structureOptions.ChargeNodes)
             {
                 var chargeNodeList = pack.ChargeNodes;
 
@@ -2227,7 +2288,7 @@ namespace ARKViewer.Models
 
 
             //beaver dams
-            if (includeBeaverDams)
+            if (structureOptions.BeaverDams)
             {
                 var beaverDamList = pack.BeaverDams;
                 foreach (var beaverDam in beaverDamList)
@@ -2250,7 +2311,7 @@ namespace ARKViewer.Models
             }
 
             //deino nests
-            if (includeDeinoNests)
+            if (structureOptions.DeinoNests)
             {
                 var deinoNestList = pack.DeinoNests;
                 foreach (var deinoNest in deinoNestList)
@@ -2275,7 +2336,7 @@ namespace ARKViewer.Models
             }
 
             //wyvern nests
-            if (includeWyvernNests)
+            if (structureOptions.WyvernNests)
             {
 
                 var wyvernNestList = pack.WyvernNests;
@@ -2304,7 +2365,7 @@ namespace ARKViewer.Models
             }
 
             //rock drakes (RockDrakeNest_C)
-            if (includeDrakeNests)
+            if (structureOptions.DrakeNests)
             {
 
                 var drakeNestList = pack.DrakeNests; //gd.Structures.Where(f => f.ClassName == "RockDrakeNest_C");
@@ -2333,7 +2394,7 @@ namespace ARKViewer.Models
             }
 
             //magmasaur nests
-            if (includeMagmaNests)
+            if (structureOptions.MagmaNests)
             {
                 var magmaNests = pack.MagmaNests; //gd.Structures.Where(f => f.ClassName == "CherufeNest_C");
                 foreach (var magmaNest in magmaNests)
@@ -2362,7 +2423,7 @@ namespace ARKViewer.Models
 
 
             //oil veins (OilVein_)
-            if (includeOilVeins)
+            if (structureOptions.OilVeins)
             {
                 var oilVeinList = pack.OilVeins; //gd.Structures.Where(f => f.ClassName.StartsWith("OilVein_"));
                 foreach (var oilVein in oilVeinList)
@@ -2381,7 +2442,7 @@ namespace ARKViewer.Models
             }
 
             //water veins (WaterVein_)
-            if (includeWaterVeins)
+            if (structureOptions.WaterVeins)
             {
                 var waterVeinList = pack.WaterVeins; // gd.Structures.Where(f => f.ClassName.StartsWith("WaterVein_"));
                 foreach (var waterVein in waterVeinList)
@@ -2400,7 +2461,7 @@ namespace ARKViewer.Models
             }
 
             //gas veins (GasVein_)
-            if (includeGasVeins)
+            if (structureOptions.GasVeins)
             {
                 var gasVeinList = pack.GasVeins; // gd.Structures.Where(f => f.ClassName.StartsWith("GasVein_"));
                 foreach (var gasVein in gasVeinList)
@@ -2420,7 +2481,7 @@ namespace ARKViewer.Models
             }
 
             //artifacts
-            if (includeArtifacts)
+            if (structureOptions.Artifacts)
             {
                 var artifactList = pack.Artifacts; //gd.Structures.Where(f => f.ClassName.StartsWith("ArtifactCrate_"));
                 foreach (var artifact in artifactList)
@@ -2433,6 +2494,24 @@ namespace ARKViewer.Models
 
                     Bitmap gasMarker = new Bitmap(ARKViewer.Properties.Resources.structure_marker_trophy, new Size(20, 20));
                     g.DrawImage(gasMarker, (float)markerX - 10.0f, (float)markerY - 10.0f);
+
+                }
+
+            }
+
+            if (structureOptions.BeeHives)
+            {
+                var hiveList = pack.BeeHives; 
+                foreach (var hive in hiveList)
+                {
+                    markerX = ((decimal)hive.Longitude.GetValueOrDefault(0)) * 1024 / 100;
+                    markerY = ((decimal)hive.Latitude.GetValueOrDefault(0)) * 1024 / 100;
+
+                    g.FillEllipse(new SolidBrush(Color.FloralWhite), (float)markerX - 15.0f, (float)markerY - 15.0f, 30, 30);
+                    g.DrawEllipse(new Pen(Color.Yellow, 1), (float)markerX - 15.0f, (float)markerY - 15.0f, 30, 30);
+
+                    Bitmap hiveMarker = new Bitmap(ARKViewer.Properties.Resources.beehive, new Size(20, 20));
+                    g.DrawImage(hiveMarker, (float)markerX - 10.0f, (float)markerY - 10.0f);
 
                 }
 

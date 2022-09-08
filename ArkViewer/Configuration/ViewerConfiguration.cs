@@ -66,6 +66,7 @@ namespace ARKViewer.Configuration
         [DataMember] public bool GasVeins { get; set; } = false;
         [DataMember] public bool Obelisks { get; set; } = true;
         [DataMember(EmitDefaultValue = false, IsRequired = false)] public bool Glitches { get; set; } = true;
+        [DataMember(EmitDefaultValue = false, IsRequired = false)] public bool BeeHives { get; set; } = true;
         [DataMember] public bool ChargeNodes { get; set; } = false;
         [DataMember] public bool PlantX { get; set; } = false;
         [DataMember] public bool PlantZ { get; set; } = false;
@@ -545,6 +546,7 @@ JArray itemList = (JArray)itemFile.GetValue("colors");
                 this.WyvernNests = savedState.WyvernNests;
                 this.DrakeNests = savedState.DrakeNests;
                 this.ChargeNodes = savedState.ChargeNodes;
+                this.BeeHives = savedState.BeeHives;
                 this.PlantZ = savedState.PlantZ;
                 this.PlantX = savedState.PlantX;
                 this.Glitches = savedState.Glitches;
@@ -580,11 +582,10 @@ JArray itemList = (JArray)itemFile.GetValue("colors");
 
         private string EncryptString(string plainText, byte[] currentIV, string password)
         {
-            ViewerEncryption enc = new ViewerEncryption();
 
             byte[] passBytes = Encoding.UTF8.GetBytes(password);
 
-            return enc.Encrypt(plainText, Convert.ToBase64String(currentIV), Convert.ToBase64String(passBytes));
+            return ViewerEncryption.Encrypt(plainText, Convert.ToBase64String(currentIV), Convert.ToBase64String(passBytes));
             
         }
 
@@ -594,7 +595,7 @@ JArray itemList = (JArray)itemFile.GetValue("colors");
 
             byte[] passBytes = Encoding.UTF8.GetBytes(password);
 
-            return enc.Decrypt(encryptedText, Convert.ToBase64String(currentIV), Convert.ToBase64String(passBytes));
+            return ViewerEncryption.Decrypt(encryptedText, Convert.ToBase64String(currentIV), Convert.ToBase64String(passBytes));
         }
 
 

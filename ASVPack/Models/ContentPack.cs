@@ -33,6 +33,8 @@ namespace ASVPack.Models
         [DataMember] public List<ContentStructure> WaterVeins { get; set; } = new List<ContentStructure>();
         [DataMember] public List<ContentStructure> GasVeins { get; set; } = new List<ContentStructure>();
         [DataMember] public List<ContentStructure> Artifacts { get; set; } = new List<ContentStructure>();
+        [DataMember] public List<ContentStructure> BeeHives { get; set; } = new List<ContentStructure>();
+
         [DataMember] public List<ContentStructure> PlantZ { get; set; } = new List<ContentStructure>();
         [DataMember] public List<ContentDroppedItem> DroppedItems { get; set; } = new List<ContentDroppedItem>();
         [DataMember] public List<ContentWildCreature> WildCreatures { get; set; } = new List<ContentWildCreature>();
@@ -79,6 +81,7 @@ namespace ASVPack.Models
             WaterVeins = new List<ContentStructure>();
             GasVeins = new List<ContentStructure>();
             Artifacts = new List<ContentStructure>();
+            BeeHives = new List<ContentStructure>();
             PlantZ = new List<ContentStructure>();
             WildCreatures = new List<ContentWildCreature>();
             Tribes = new List<ContentTribe>();
@@ -160,6 +163,7 @@ namespace ASVPack.Models
                     WaterVeins = loaded.WaterVeins;
                     GasVeins = loaded.GasVeins;
                     Artifacts = loaded.Artifacts;
+                    BeeHives = loaded.BeeHives;
                     PlantZ = loaded.PlantZ;
                     WildCreatures = loaded.WildCreatures;
                     Tribes = loaded.Tribes;
@@ -196,7 +200,8 @@ namespace ASVPack.Models
                 Task.Run(() => ExportJsonPlayerTribeLogs(Path.Combine(exportPath, "ASV_TribeLogs.json"))),
                 Task.Run(() => ExportJsonTamed(Path.Combine(exportPath, "ASV_Tamed.json"))),
                 Task.Run(() => ExportJsonPlayers(Path.Combine(exportPath, "ASV_Players.json"))),
-                Task.Run(() => ExportJsonPlayerStructures(Path.Combine(exportPath, "ASV_Structures.json")))
+                Task.Run(() => ExportJsonPlayerStructures(Path.Combine(exportPath, "ASV_Structures.json"))),
+                Task.Run(() => ExportJsonMapStructures(Path.Combine(exportPath, "ASV_MapStructures.json")))
                 )
             ;
         }
@@ -498,6 +503,766 @@ namespace ASVPack.Models
                 }
 
             }
+        }
+
+        public void ExportJsonMapStructures(string exportFilename)
+        {
+            string exportFolder = Path.GetDirectoryName(exportFilename);
+            if (!Directory.Exists(exportFolder)) Directory.CreateDirectory(exportFolder);
+
+
+            using (FileStream fs = File.Create(exportFilename))
+            {
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    using (JsonTextWriter jw = new JsonTextWriter(sw))
+                    {
+                        jw.WriteStartArray();
+
+                        foreach (var mapStructure in TerminalMarkers)
+                        {
+       
+                            jw.WriteStartObject();
+
+                            
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+                            
+                        }
+
+                        foreach (var mapStructure in OilVeins)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+                        foreach (var mapStructure in GasVeins)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+
+
+
+                        foreach (var mapStructure in WaterVeins)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+                        foreach (var mapStructure in ChargeNodes)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+
+                        foreach (var mapStructure in Artifacts)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+
+                        foreach (var mapStructure in WyvernNests)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+
+                        foreach (var mapStructure in DeinoNests)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+                        foreach (var mapStructure in DrakeNests)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+
+                        foreach (var mapStructure in MagmaNests)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+                        foreach (var mapStructure in BeaverDams)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+                        foreach (var mapStructure in GlitchMarkers)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+
+                        foreach (var mapStructure in BeeHives)
+                        {
+
+                            jw.WriteStartObject();
+
+
+                            jw.WritePropertyName("struct");
+                            jw.WriteValue(mapStructure.ClassName);
+
+                            jw.WritePropertyName("lat");
+                            jw.WriteValue(mapStructure.Latitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("lon");
+                            jw.WriteValue(mapStructure.Longitude.GetValueOrDefault(0));
+
+                            jw.WritePropertyName("ccc");
+                            jw.WriteValue($"{mapStructure.X} {mapStructure.Y} {mapStructure.Z}");
+
+
+                            bool exportInventories = true;
+
+                            if (exportInventories)
+                            {
+                                jw.WritePropertyName("inventory");
+                                jw.WriteStartArray();
+                                if (mapStructure.Inventory.Items.Count > 0)
+                                {
+                                    foreach (var invItem in mapStructure.Inventory.Items)
+                                    {
+                                        if (!invItem.IsEngram)
+                                        {
+                                            jw.WriteStartObject();
+
+                                            jw.WritePropertyName("itemId");
+                                            jw.WriteValue(invItem.ClassName);
+
+                                            jw.WritePropertyName("qty");
+                                            jw.WriteValue(invItem.Quantity);
+
+                                            jw.WritePropertyName("blueprint");
+                                            jw.WriteValue(invItem.IsBlueprint);
+
+
+                                            jw.WriteEndObject();
+                                        }
+
+                                    }
+                                }
+
+                                jw.WriteEndArray();
+                            }
+
+                            jw.WriteEndObject();
+
+                        }
+
+                        jw.WriteEndArray();
+                    }
+
+                }
+
+            }
+
         }
 
         public void ExportJsonPlayerStructures(string exportFilename)
@@ -981,7 +1746,7 @@ namespace ASVPack.Models
                 loadedStructures = new ConcurrentBag<ContentStructure>();
                 var chargeNodes = container.MapStructures
                     .Where(s =>
-                        s.ClassName.StartsWith("PrimalItem_PowerNodeCharge")
+                        (s.ClassName.StartsWith("PrimalItem_PowerNodeCharge") || s.ClassName.StartsWith("PrimalStructurePowerNode_C"))
                         && s.Latitude != null
                         && (Math.Abs((decimal)s.Latitude.GetValueOrDefault(0) - FilterLatitude) <= FilterRadius)
                         && (Math.Abs((decimal)s.Longitude.GetValueOrDefault(0) - FilterLongitude) <= FilterRadius)
@@ -1339,6 +2104,35 @@ namespace ASVPack.Models
                 if (!loadedStructures.IsEmpty) PlantZ.AddRange(loadedStructures.ToList());
 
 
+                loadedStructures = new ConcurrentBag<ContentStructure>();
+                var beeHives = container.MapStructures
+                    .Where(s =>
+                        s.ClassName.StartsWith("BeeHive_C")
+                        && s.Latitude != null
+                        && (Math.Abs((decimal)s.Latitude.GetValueOrDefault(0) - FilterLatitude) <= FilterRadius)
+                        && (Math.Abs((decimal)s.Longitude.GetValueOrDefault(0) - FilterLongitude) <= FilterRadius)
+                    ).ToList();
+                if (beeHives != null && beeHives.Count > 0)
+                {
+                    Parallel.ForEach(beeHives, hive =>
+                    {
+                        var loadedStructure = new ContentStructure()
+                        {
+                            ClassName = "ASV_BeeHive",
+                            Latitude = (float)hive.Latitude,
+                            Longitude = (float)hive.Longitude,
+                            X = hive.X,
+                            Y = hive.Y,
+                            Z = hive.Z,
+                            Inventory = IncludeGameStructureContent ? hive.Inventory : new ContentInventory()
+                        };
+
+                        loadedStructures.Add(loadedStructure);
+
+                    });
+                }
+                if (!loadedStructures.IsEmpty) BeeHives.AddRange(loadedStructures.ToList());
+
             }
 
 
@@ -1426,6 +2220,7 @@ namespace ASVPack.Models
                 GlitchMarkers = pack.GlitchMarkers.Where(w =>
                                                             (Math.Abs((decimal)w.Latitude.GetValueOrDefault(0) - FilterLatitude) <= FilterRadius)
                                                             && (Math.Abs((decimal)w.Longitude.GetValueOrDefault(0) - FilterLongitude) <= FilterRadius)
+                                                            
                                                         ).ToList();
                 BeaverDams = pack.BeaverDams.Where(w =>
                                                             (Math.Abs((decimal)w.Latitude.GetValueOrDefault(0) - FilterLatitude) <= FilterRadius)
