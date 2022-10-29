@@ -56,14 +56,11 @@ namespace ASVPack.Models
 
         }
 
-        public void LoadSaveGame(string saveFilename, string localProfileFilename)
+        public void LoadSaveGame(string saveFilename, string localProfileFilename, string clusterFolder)
         {
             ContentMap selectedMap = null;
 
-
-
             logWriter.Trace("BEGIN LoadSaveGame()");
-
 
 
             if (!File.Exists(saveFilename))
@@ -100,6 +97,11 @@ namespace ASVPack.Models
             {
                 //ignore, not really that bothered about LocalProfile, added bonus if it is read in.
             }
+
+
+            
+
+
 
 
             logWriter.Info("Reading game save data...");
@@ -536,6 +538,7 @@ namespace ASVPack.Models
                                 }
                                 else
                                 {
+
                                     return null;
                                 }
 
@@ -1238,6 +1241,206 @@ if (itemObject != null)
                 }
 
 
+                //cluster data
+                if (!string.IsNullOrEmpty(clusterFolder) && Directory.Exists(clusterFolder))
+                {
+
+                    logWriter.Info("Reading cluster data...");
+                    var profileFilenames = Directory.GetFiles(clusterFolder, "*");
+                    profileFilenames.AsParallel().ForAll(fileName =>
+                    //foreach (var fileName in profileFilenames)
+                    {
+                        long itemOwnerId = 0;
+                        long.TryParse(System.IO.Path.GetFileNameWithoutExtension(fileName), out itemOwnerId);
+
+                        try
+                        {
+                            using (Stream clusterFileStream = new FileStream(fileName, FileMode.Open))
+                            {
+                                using (ArkArchive clusterArchive = new ArkArchive(clusterFileStream))
+                                {
+                                    ArkCloudInventory cloudInventory = new ArkCloudInventory();
+                                    cloudInventory.ReadBinary(clusterArchive, ReadingOptions.Create().WithBuildComponentTree(true).WithDataFilesObjectMap(false).WithGameObjects(true).WithGameObjectProperties(true));
+
+                                    PropertyStruct propTest = cloudInventory.GetTypedProperty<PropertyStruct>("MyArkData");
+                                    StructPropertyList propList = propTest.Value as StructPropertyList;
+                                    if (propList != null)
+                                    {
+                                        var itemList = propList.GetTypedProperty<PropertyArray>("ArkItems");
+                                        if (itemList != null)
+                                        {
+                                            foreach (StructPropertyList testItem in itemList.Value as ArkArrayStruct)
+                                            {
+                                                try
+                                                {
+                                                    var item = testItem.GetTypedProperty<PropertyStruct>("ArkTributeItem");
+
+                                                    var isInitialItem = (item.Value as StructPropertyList).GetPropertyValue<bool>("bIsInitialItem");
+                                                    if (!isInitialItem)
+                                                    {
+                                                        ContentItem newItem = new ContentItem(item.Value as StructPropertyList);
+                                                        //newItem.OwnerPlayerId = itemOwnerId;
+                                                        if (newItem.UploadedTimeInGame != 0)
+                                                        {
+                                                            newItem.UploadedTime = GetApproxDateTimeOf(newItem.UploadedTimeInGame);
+                                                            if (!newItem.UploadedTime.HasValue) newItem.UploadedTime = DateTime.MinValue;
+                                                        }
+
+                                                        if (newItem.OwnerPlayerId == 0)
+                                                        {
+                                                            //attempt to find by steam / epic id (filename)
+                                                            var ownerPlayer = Tribes.SelectMany(t => t.Players.Where(p => p.NetworkId == itemOwnerId.ToString())).FirstOrDefault();
+                                                            if (ownerPlayer != null) newItem.OwnerPlayerId = ownerPlayer.Id;
+                                                        }
+
+                                                        if (newItem.OwnerPlayerId != 0)
+                                                        {
+                                                            var targetPlayer = Tribes.SelectMany(m => m.Players).FirstOrDefault(p => p.Id == newItem.OwnerPlayerId || p.TargetingTeam == newItem.OwnerPlayerId);
+                                                            if (targetPlayer != null)
+                                                            {
+                                                                if(newItem.Quantity == 0)
+                                                                {
+                                                                    newItem.Quantity = 1;
+                                                                }
+
+                                                                targetPlayer.Inventory.Items.Add(newItem);
+                                                            }                    
+                                                        }
+                                                    }
+                                                }
+                                                catch 
+                                                { 
+                                                
+                                                }
+                                                
+
+                                            }
+
+                                        }
+
+                                        var dinoList = propList.GetTypedProperty<PropertyArray>("ArkTamedDinosData");
+                                        if (dinoList != null)
+                                        {
+
+
+                                            foreach (StructPropertyList dinoData in dinoList.Value as ArkArrayStruct)
+                                            {
+                                                var byteArray = dinoData.GetTypedProperty<PropertyArray>("DinoData");
+                                                int uploadTime = dinoData.GetPropertyValue<int>("UploadTime");
+
+
+                                                ArkArrayUInt8? creatureBytes = byteArray.Value as ArkArrayUInt8;
+                                                if (creatureBytes != null)
+                                                {
+
+
+                                                    var cryoStream = new System.IO.MemoryStream(creatureBytes.ToArray<byte>());
+
+                                                    using (ArkArchive uploadArchive = new ArkArchive(cryoStream))
+                                                    {
+                                                        // number of serialized objects
+                                                        int objCount = uploadArchive.ReadInt();
+                                                        if (objCount != 0)
+                                                        {
+                                                            var storedGameObjects = new List<GameObject>(objCount);
+                                                            for (int oi = 0; oi < objCount; oi++)
+                                                            {
+                                                                storedGameObjects.Add(new GameObject(uploadArchive));
+                                                            }
+
+                                                            foreach (var ob in storedGameObjects)
+                                                            {
+                                                                ob.LoadProperties(uploadArchive, new GameObject(), 0);
+                                                            }
+
+                                                            var creatureObject = storedGameObjects[0];
+                                                            var statusObject = storedGameObjects[1];
+
+                                                            // assume the first object is the creature object
+                                                            string creatureActorId = creatureObject.Names[0].ToString();
+
+                                                            // the tribe name is stored in `TamerString`, non-cryoed creatures have the property `TribeName` for that.
+                                                            if (creatureObject.GetPropertyValue<string>("TribeName")?.Length == 0 && creatureObject.GetPropertyValue<string>("TamerString")?.Length > 0)
+                                                                creatureObject.Properties.Add(new PropertyString("TribeName", creatureObject.GetPropertyValue<string>("TamerString")));
+
+
+                                                            ContentTamedCreature tamedDino = new ContentTamedCreature(uploadTime, creatureObject, statusObject);
+
+                                                            if (tamedDino.UploadedTimeInGame != 0)
+                                                            {
+                                                                tamedDino.UploadedTime = DateTime.UnixEpoch.AddSeconds(tamedDino.UploadedTimeInGame);
+                                                            }
+                                                            
+
+                                                            //TODO:// add to a list so we can assign it to the correct tribe
+                                                            var targetTribe = Tribes.FirstOrDefault(t => t.TribeId == tamedDino.TargetingTeam);
+                                                            if (targetTribe == null)
+                                                            {
+                                                                //see if we can find a matching steam player in existing tribe
+                                                                var ownerTribe = Tribes.FirstOrDefault(t => t.Players.LongCount(p => p.NetworkId == itemOwnerId.ToString()) > 0);
+                                                                if (ownerTribe != null)
+                                                                {
+                                                                    targetTribe = ownerTribe;
+                                                                }
+
+                                                                if (targetTribe == null)
+                                                                {
+                                                                    targetTribe = new ContentTribe()
+                                                                    {
+                                                                        TribeName = tamedDino.TribeName ?? tamedDino.TamerName ?? tamedDino.ImprinterName,
+                                                                        TribeId = tamedDino.TargetingTeam
+                                                                    };
+                                                                    if (!string.IsNullOrEmpty(targetTribe.TribeName))
+                                                                    {
+                                                                        targetTribe.Tames.Add(tamedDino);
+                                                                        Tribes.Add(targetTribe);
+                                                                    }
+                                                                }
+
+                                                            }
+                                                            if (targetTribe != null)
+                                                            {
+                                                                targetTribe.Tames.Add(tamedDino);
+                                                                if (string.IsNullOrEmpty(tamedDino.TribeName))
+                                                                {
+                                                                    tamedDino.TribeName = targetTribe.TribeName;
+                                                                }
+                                                            }
+
+
+                                                        }
+
+                                                    }
+
+                                                }
+
+
+
+
+
+                                            }
+
+                                        }
+                                    }
+
+
+                                }
+                            }
+
+
+                        }
+                        catch
+                        {
+                            //ignore
+                        }
+
+                    }
+                    );
+
+
+                }
+
+
 
                 long endTicks = DateTime.Now.Ticks;
                 var duration = TimeSpan.FromTicks(endTicks - startTicks);
@@ -1256,8 +1459,16 @@ if (itemObject != null)
 
         public DateTime? GetApproxDateTimeOf(double? objectTime)
         {
-            return objectTime.HasValue
+            try
+            {
+                return objectTime.HasValue
                 && GameSeconds > 0 ? GameSaveTime.AddSeconds(objectTime.Value - GameSeconds) : (DateTime?)null;
+            }
+            catch
+            {
+                return (DateTime?)null;
+            }
+            
         }
 
 

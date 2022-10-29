@@ -116,6 +116,7 @@ namespace ARKViewer
             this.lblSelectedWildTotal = new System.Windows.Forms.Label();
             this.lblWildClass = new System.Windows.Forms.Label();
             this.tpgTamed = new System.Windows.Forms.TabPage();
+            this.chkTameUploads = new System.Windows.Forms.CheckBox();
             this.cboTameRealm = new System.Windows.Forms.ComboBox();
             this.lblTameRealm = new System.Windows.Forms.Label();
             this.pnlFilterTamed = new System.Windows.Forms.Panel();
@@ -166,6 +167,8 @@ namespace ARKViewer
             this.lvwTameDetail_Rig1 = new System.Windows.Forms.ColumnHeader();
             this.lvwTameDetail_Rig2 = new System.Windows.Forms.ColumnHeader();
             this.lvwTameDetail_TribeInRange = new System.Windows.Forms.ColumnHeader();
+            this.lvwTameDetail_UploadTime = new System.Windows.Forms.ColumnHeader();
+            this.lvwTameDetail_DinoId = new System.Windows.Forms.ColumnHeader();
             this.lvwTameDetail_CCC = new System.Windows.Forms.ColumnHeader();
             this.lblTameTotal = new System.Windows.Forms.Label();
             this.pnlTameStatTypes = new System.Windows.Forms.Panel();
@@ -280,6 +283,7 @@ namespace ARKViewer
             this.lvwDroppedItems_Player = new System.Windows.Forms.ColumnHeader();
             this.lvwDroppedItems_CCC = new System.Windows.Forms.ColumnHeader();
             this.tpgItemList = new System.Windows.Forms.TabPage();
+            this.chkItemSearchUploads = new System.Windows.Forms.CheckBox();
             this.pnlFilterSearch = new System.Windows.Forms.Panel();
             this.btnFindSearched = new System.Windows.Forms.Button();
             this.txtFilterSearch = new System.Windows.Forms.TextBox();
@@ -303,6 +307,7 @@ namespace ARKViewer
             this.lvwItemList_Lat = new System.Windows.Forms.ColumnHeader();
             this.lvwItemList_Lon = new System.Windows.Forms.ColumnHeader();
             this.lvwItemList_CCC = new System.Windows.Forms.ColumnHeader();
+            this.lvwItemList_UploadTime = new System.Windows.Forms.ColumnHeader();
             this.tpgLocalProfile = new System.Windows.Forms.TabPage();
             this.pnlUploadedStats = new System.Windows.Forms.Panel();
             this.lblUploadedStats = new System.Windows.Forms.Label();
@@ -878,7 +883,7 @@ namespace ARKViewer
             this.chkCryo.Location = new System.Drawing.Point(89, 79);
             this.chkCryo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.chkCryo.Name = "chkCryo";
-            this.chkCryo.Size = new System.Drawing.Size(161, 27);
+            this.chkCryo.Size = new System.Drawing.Size(105, 27);
             this.chkCryo.TabIndex = 6;
             this.chkCryo.Text = "Include Stored";
             this.toolTip1.SetToolTip(this.chkCryo, "Show / hide stored tames.");
@@ -1347,6 +1352,7 @@ namespace ARKViewer
             // 
             // tpgTamed
             // 
+            this.tpgTamed.Controls.Add(this.chkTameUploads);
             this.tpgTamed.Controls.Add(this.cboTameRealm);
             this.tpgTamed.Controls.Add(this.lblTameRealm);
             this.tpgTamed.Controls.Add(this.pnlFilterTamed);
@@ -1374,6 +1380,21 @@ namespace ARKViewer
             this.tpgTamed.TabIndex = 3;
             this.tpgTamed.Text = "Tamed Creatures";
             this.tpgTamed.UseVisualStyleBackColor = true;
+            // 
+            // chkTameUploads
+            // 
+            this.chkTameUploads.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.chkTameUploads.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.chkTameUploads.Location = new System.Drawing.Point(199, 77);
+            this.chkTameUploads.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.chkTameUploads.Name = "chkTameUploads";
+            this.chkTameUploads.Size = new System.Drawing.Size(121, 31);
+            this.chkTameUploads.TabIndex = 25;
+            this.chkTameUploads.Text = "Include Uploads";
+            this.chkTameUploads.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.toolTip1.SetToolTip(this.chkTameUploads, "Show / hide uploaded tames");
+            this.chkTameUploads.UseVisualStyleBackColor = true;
+            this.chkTameUploads.CheckedChanged += new System.EventHandler(this.chkTameUploads_CheckedChanged);
             // 
             // cboTameRealm
             // 
@@ -1594,6 +1615,8 @@ namespace ARKViewer
             this.lvwTameDetail_Rig1,
             this.lvwTameDetail_Rig2,
             this.lvwTameDetail_TribeInRange,
+            this.lvwTameDetail_UploadTime,
+            this.lvwTameDetail_DinoId,
             this.lvwTameDetail_CCC});
             this.lvwTameDetail.ContextMenuStrip = this.mnuContext;
             this.lvwTameDetail.FullRowSelect = true;
@@ -1776,6 +1799,16 @@ namespace ARKViewer
             // 
             this.lvwTameDetail_TribeInRange.Text = "Tribe In Range";
             this.lvwTameDetail_TribeInRange.Width = 120;
+            // 
+            // lvwTameDetail_UploadTime
+            // 
+            this.lvwTameDetail_UploadTime.Text = "Uploaded";
+            this.lvwTameDetail_UploadTime.Width = 120;
+            // 
+            // lvwTameDetail_DinoId
+            // 
+            this.lvwTameDetail_DinoId.Text = "DinoId";
+            this.lvwTameDetail_DinoId.Width = 0;
             // 
             // lvwTameDetail_CCC
             // 
@@ -3048,6 +3081,7 @@ namespace ARKViewer
             // 
             // tpgItemList
             // 
+            this.tpgItemList.Controls.Add(this.chkItemSearchUploads);
             this.tpgItemList.Controls.Add(this.pnlFilterSearch);
             this.tpgItemList.Controls.Add(this.chkItemSearchBlueprints);
             this.tpgItemList.Controls.Add(this.cboItemListItem);
@@ -3066,6 +3100,20 @@ namespace ARKViewer
             this.tpgItemList.TabIndex = 6;
             this.tpgItemList.Text = "Item Search";
             this.tpgItemList.UseVisualStyleBackColor = true;
+            // 
+            // chkItemSearchUploads
+            // 
+            this.chkItemSearchUploads.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.chkItemSearchUploads.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.chkItemSearchUploads.Location = new System.Drawing.Point(792, 7);
+            this.chkItemSearchUploads.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.chkItemSearchUploads.Name = "chkItemSearchUploads";
+            this.chkItemSearchUploads.Size = new System.Drawing.Size(122, 47);
+            this.chkItemSearchUploads.TabIndex = 23;
+            this.chkItemSearchUploads.Text = "Include uploads";
+            this.toolTip1.SetToolTip(this.chkItemSearchUploads, "Show / hide blueprints.");
+            this.chkItemSearchUploads.UseVisualStyleBackColor = true;
+            this.chkItemSearchUploads.CheckedChanged += new System.EventHandler(this.chkItemSearchUploads_CheckedChanged);
             // 
             // pnlFilterSearch
             // 
@@ -3108,16 +3156,14 @@ namespace ARKViewer
             // 
             // chkItemSearchBlueprints
             // 
-            this.chkItemSearchBlueprints.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkItemSearchBlueprints.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chkItemSearchBlueprints.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("chkItemSearchBlueprints.BackgroundImage")));
             this.chkItemSearchBlueprints.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.chkItemSearchBlueprints.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.chkItemSearchBlueprints.Location = new System.Drawing.Point(1040, 7);
+            this.chkItemSearchBlueprints.Location = new System.Drawing.Point(662, 7);
             this.chkItemSearchBlueprints.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.chkItemSearchBlueprints.Name = "chkItemSearchBlueprints";
-            this.chkItemSearchBlueprints.Size = new System.Drawing.Size(47, 46);
+            this.chkItemSearchBlueprints.Size = new System.Drawing.Size(122, 47);
             this.chkItemSearchBlueprints.TabIndex = 11;
+            this.chkItemSearchBlueprints.Text = "Include blueprints";
             this.toolTip1.SetToolTip(this.chkItemSearchBlueprints, "Show / hide blueprints.");
             this.chkItemSearchBlueprints.UseVisualStyleBackColor = true;
             this.chkItemSearchBlueprints.CheckedChanged += new System.EventHandler(this.chkItemSearchBlueprints_CheckedChanged);
@@ -3237,7 +3283,8 @@ namespace ARKViewer
             this.lvwItemList_Quantity,
             this.lvwItemList_Lat,
             this.lvwItemList_Lon,
-            this.lvwItemList_CCC});
+            this.lvwItemList_CCC,
+            this.lvwItemList_UploadTime});
             this.lvwItemList.FullRowSelect = true;
             this.lvwItemList.Location = new System.Drawing.Point(13, 60);
             this.lvwItemList.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -3295,6 +3342,11 @@ namespace ARKViewer
             // 
             this.lvwItemList_CCC.Text = "CCC";
             this.lvwItemList_CCC.Width = 0;
+            // 
+            // lvwItemList_UploadTime
+            // 
+            this.lvwItemList_UploadTime.Text = "Uploaded";
+            this.lvwItemList_UploadTime.Width = 120;
             // 
             // tpgLocalProfile
             // 
@@ -4436,6 +4488,11 @@ namespace ARKViewer
         private System.Windows.Forms.Label lblPlayerRealm;
         private System.Windows.Forms.ComboBox cboDroppedItemRealm;
         private System.Windows.Forms.Label lblDroppedItemRealm;
+        private System.Windows.Forms.CheckBox chkItemSearchUploads;
+        private System.Windows.Forms.ColumnHeader lvwItemList_UploadTime;
+        private System.Windows.Forms.ColumnHeader lvwTameDetail_UploadTime;
+        private System.Windows.Forms.CheckBox chkTameUploads;
+        private System.Windows.Forms.ColumnHeader lvwTameDetail_DinoId;
     }
 }
 
