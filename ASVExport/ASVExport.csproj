@@ -4,12 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <StartupObject>ASVExport.Program</StartupObject>
-    <AssemblyVersion>4.5.0.3</AssemblyVersion>
-    <FileVersion>4.5.0.3</FileVersion>
+    <AssemblyVersion>4.5.1.0</AssemblyVersion>
+    <FileVersion>4.5.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
   <ItemGroup>
